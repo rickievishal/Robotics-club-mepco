@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+
+
+:root{
+  --background: #030303;
+  --background-light: #111111;
+  --primary: #21fa1d;
+  --primary-dark: #178c13;
+  --primary-light: #6aff68;
+  --secondary: #ffffff;
+  --secondary-dark: #e0e0e0;
+  --secondary-light: #f8f8f8;
+  --accent: #fa1d8f;
+  --accent-dark: #a3155f;
+  --accent-light: #ff68ba;
+  --text: #f5f5f5;
+  --text-muted: #b0b0b0;
+}
+body{
+  background: var(--background);
+}
