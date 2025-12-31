@@ -4,11 +4,13 @@ import { FaGoogle } from 'react-icons/fa6'
 import { useGoogleLogin } from '@react-oauth/google'
 import { googleAuth } from '../api'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../../hooks/useAuth'
 
 const GoogleLoginBtn = () => {
     const router = useRouter();
+    const { login } = useAuth();
     useEffect(() => {
-        const userProfile = JSON.parse(localStorage.getItem('user-info'))
+        const userProfile = JSON.parse(localStorage.getItem('userData'))
         if(userProfile){
             router.push('/club/welcome')
         }
@@ -25,12 +27,13 @@ const GoogleLoginBtn = () => {
                     const {email,name,image,role} =result.data.user
                     console.log("result : ",result.data.user)
                     const token = result.data.token
-                    const obj = {email,name,image,token,role}
-                    localStorage.setItem("user-info",JSON.stringify(obj))
-                    const data = localStorage.getItem("user-info")
+                    const userData = {email,name,image,role}
+                    
+                    // Use AuthProvider's login function to sync React state
+                    login(userData, token)
                     window.dispatchEvent(new Event("login-success"));
 
-                    console.log(data);
+                    console.log(result.data);
                     router.push('/club/welcome');
                 }catch(err){
                     console.log(err)

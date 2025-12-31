@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import OauthWrapper from "./components/google-auth/OauthWrapper";
+import { AuthProvider } from "./hooks/useAuth";
 import Header from "./Header";
 import Footer from "./Footer";
 
@@ -26,11 +27,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased relative `}
       >
-        <OauthWrapper>
-        <Header/>
-        {children}
-        </OauthWrapper>
-        <Footer/>
+        <AuthProvider>
+          <OauthWrapper>
+            <Header/>
+            {children}
+          </OauthWrapper>
+          <Footer/>
+        </AuthProvider>
       </body>
     </html>
   );

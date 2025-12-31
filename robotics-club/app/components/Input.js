@@ -1,3 +1,4 @@
+'use client';
 import React from 'react'
 
 const Input = ({label = "Label",placeholder="placeholder",name="name",className,onChange,value}) => {

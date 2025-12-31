@@ -9,7 +9,7 @@ const LoginStatus = () => {
     const [isProfileHovered, setIsProfileHovered] = useState(false);
     useEffect(() => {
         const updateCookie = () => {
-                const user = JSON.parse(localStorage.getItem("user-info"));
+        const user = JSON.parse(localStorage.getItem("userData"));
                 setCookie(user);
         };
 
@@ -26,12 +26,14 @@ const LoginStatus = () => {
 
 
     const handleLogin = () => {
-        localStorage.removeItem("user-info")
+        localStorage.removeItem("userData")
+        localStorage.removeItem("token")
         console.log(cookie)
         router.push('/register')
     }
     const handleLogout = () =>{
-        localStorage.removeItem("user-info")
+        localStorage.removeItem("userData")
+        localStorage.removeItem("token")
         setCookie(null);
         console.log(cookie)
         window.location.reload()
