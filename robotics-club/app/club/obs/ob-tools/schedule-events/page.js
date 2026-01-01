@@ -297,7 +297,6 @@ const OBSEventsPage = () => {
                                     className="w-full pl-10 pr-4 py-2 bg-[rgb(19,19,19)] border border-[rgb(29,29,29)] rounded-lg text-white placeholder-[rgb(155,155,155)] focus:outline-none focus:border-[var(--primary)]"
                                 />
                             </div>
-
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
