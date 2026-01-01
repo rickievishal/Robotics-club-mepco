@@ -1,3 +1,11 @@
+// Production logging utility
+const log = {
+    info: (component, message) => console.log(`[INFO] [${component}] ${message}`),
+    warn: (component, message) => console.warn(`[WARN] [${component}] ${message}`),
+    error: (component, message) => console.error(`[ERROR] [${component}] ${message}`),
+    request: (method, path, userId) => console.log(`[REQUEST] [${method}] ${path} - User: ${userId || 'anonymous'}`)
+};
+
 const { default: axios } = require("axios")
 const { oauth2cient } = require("../utils/googleConfig")
 const UserModel = require("../models/userModel")
@@ -6,7 +14,7 @@ const { hashPassword, verifyPassword, validatePasswordStrength } = require("../u
 
 const googleLogin = async(req,res) => {
     try{
-        console.log("the get is received")
+        log.info('AUTH', 'Google login request received');
         const {code} = req.query
         const googleRes = await oauth2cient.getToken(code)
         oauth2cient.setCredentials(googleRes.tokens)
@@ -28,6 +36,7 @@ const googleLogin = async(req,res) => {
                     expiresIn : process.env.JWT_EXPIRE
                 }
             );
+            log.info('AUTH', `New Google user registered: ${email}`);
             return res.status(200).json({
                 message: "Success",
                 token,
@@ -41,13 +50,14 @@ const googleLogin = async(req,res) => {
         { expiresIn: process.env.JWT_EXPIRE }
         );
 
+        log.info('AUTH', `Google user logged in: ${email}`);
         return res.status(200).json({
         message: "Success",
         token,
         user
         });
     }catch(err){
-        console.log(err)
+        log.error('AUTH', 'Google login failed');
         res.status(500).json({
             message: "internal server error"
         })
@@ -69,6 +79,7 @@ const emailSignup = async(req,res) => {
         // Check if user already exists
         const existingUser = await UserModel.findOne({email});
         if (existingUser) {
+            log.warn('AUTH', `Signup failed - email already exists: ${email}`);
             return res.status(400).json({
                 message: "User already exists with this email"
             });
@@ -77,6 +88,7 @@ const emailSignup = async(req,res) => {
         // Validate password strength
         const passwordValidation = validatePasswordStrength(password);
         if (!passwordValidation.isValid) {
+            log.warn('AUTH', `Signup failed - weak password: ${email}`);
             return res.status(400).json({
                 message: "Password is too weak. Please choose a stronger password.",
                 passwordStrength: passwordValidation.strengthText
@@ -91,7 +103,7 @@ const emailSignup = async(req,res) => {
             name,
             email,
             password: hashedPassword,
-            image: null, // Set to null as requested
+            image: null,
             role: "member",
             authProvider: 'email'
         });
@@ -103,13 +115,14 @@ const emailSignup = async(req,res) => {
             { expiresIn: process.env.JWT_EXPIRE }
         );
 
+        log.info('AUTH', `New user registered: ${email}`);
         return res.status(200).json({
             message: "Success",
             token,
             user
         });
     }catch(err){
-        console.log(err);
+        log.error('AUTH', 'Email signup failed');
         res.status(500).json({
             message: "internal server error"
         });
@@ -131,6 +144,7 @@ const emailLogin = async(req,res) => {
         // Find user
         const user = await UserModel.findOne({email});
         if (!user) {
+            log.warn('AUTH', `Login failed - user not found: ${email}`);
             return res.status(400).json({
                 message: "Invalid email or password"
             });
@@ -138,6 +152,7 @@ const emailLogin = async(req,res) => {
 
         // Check if user used email authentication
         if (user.authProvider !== 'email') {
+            log.warn('AUTH', `Login failed - wrong auth provider: ${email}`);
             return res.status(400).json({
                 message: "This account uses Google authentication. Please use Google login."
             });
@@ -146,6 +161,7 @@ const emailLogin = async(req,res) => {
         // Verify password
         const isValidPassword = await verifyPassword(password, user.password);
         if (!isValidPassword) {
+            log.warn('AUTH', `Login failed - invalid password: ${email}`);
             return res.status(400).json({
                 message: "Invalid email or password"
             });
@@ -158,13 +174,14 @@ const emailLogin = async(req,res) => {
             { expiresIn: process.env.JWT_EXPIRE }
         );
 
+        log.info('AUTH', `User logged in: ${email} (${user.role})`);
         return res.status(200).json({
             message: "Success",
             token,
             user
         });
     }catch(err){
-        console.log(err);
+        log.error('AUTH', 'Email login failed');
         res.status(500).json({
             message: "internal server error"
         });
@@ -176,13 +193,15 @@ const getAllUsers = async (req, res) => {
     try {
         // Check if user is admin
         if (req.user.role !== 'admin') {
+            log.warn('AUTH', `Unauthorized user list request by ${req.user.email}`);
             return res.status(403).json({ message: 'Access denied. Admin only.' });
         }
 
         const users = await UserModel.find({}, '-password').sort({ createdAt: -1 });
+        log.info('AUTH', `Admin ${req.user.email} fetched user list`);
         res.status(200).json({ users });
     } catch (err) {
-        console.error('Error fetching users:', err);
+        log.error('AUTH', 'Failed to fetch users');
         res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -192,6 +211,7 @@ const updateUserRole = async (req, res) => {
     try {
         // Check if user is admin
         if (req.user.role !== 'admin') {
+            log.warn('AUTH', `Unauthorized role update by ${req.user.email}`);
             return res.status(403).json({ message: 'Access denied. Admin only.' });
         }
 
@@ -213,9 +233,10 @@ const updateUserRole = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        log.info('AUTH', `Admin ${req.user.email} updated role for user ${userId} to ${role}`);
         res.status(200).json({ message: 'User role updated successfully', user });
     } catch (err) {
-        console.error('Error updating user role:', err);
+        log.error('AUTH', 'Failed to update user role');
         res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -225,6 +246,7 @@ const deleteUser = async (req, res) => {
     try {
         // Check if user is admin
         if (req.user.role !== 'admin') {
+            log.warn('AUTH', `Unauthorized user deletion by ${req.user.email}`);
             return res.status(403).json({ message: 'Access denied. Admin only.' });
         }
 
@@ -236,9 +258,10 @@ const deleteUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        log.info('AUTH', `Admin ${req.user.email} deleted user ${userId}`);
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (err) {
-        console.error('Error deleting user:', err);
+        log.error('AUTH', 'Failed to delete user');
         res.status(500).json({ message: 'Internal server error' });
     }
 };

@@ -16,16 +16,11 @@ const GoogleLoginBtn = () => {
         }
     }, [])
     const handleAuthResponse = async(authRes) => {
-        console.log(authRes)
         try{
             if(authRes['code']){
-                console.log(authRes['code'])
                 try{
-                    console.log(authRes['code'])
                     const result = await googleAuth (authRes['code']);
-                    console.log(result.data)
                     const {email,name,image,role} =result.data.user
-                    console.log("result : ",result.data.user)
                     const token = result.data.token
                     const userData = {email,name,image,role}
                     
@@ -33,14 +28,13 @@ const GoogleLoginBtn = () => {
                     login(userData, token)
                     window.dispatchEvent(new Event("login-success"));
 
-                    console.log(result.data);
                     router.push('/club/welcome');
                 }catch(err){
-                    console.log(err)
+                    // Google login failed
                 }
             }
         }catch(err) {
-            console.log(err)
+            // Auth error
         }
     }
     const handleGoogleSiginUp = useGoogleLogin({
@@ -56,3 +50,4 @@ const GoogleLoginBtn = () => {
 }
 
 export default GoogleLoginBtn
+

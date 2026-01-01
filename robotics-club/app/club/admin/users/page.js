@@ -27,7 +27,6 @@ const AdminUsersPage = () => {
             setError(null)
             
             const token = localStorage.getItem('token')
-            console.log('Fetching users with token:', token ? 'Token exists' : 'No token found')
             
             if (!token) {
                 setError('Authentication token not found. Please log in again.')
@@ -42,19 +41,14 @@ const AdminUsersPage = () => {
                 }
             })
             
-            console.log('Response status:', response.status)
-            
             if (response.ok) {
                 const data = await response.json()
-                console.log('Users fetched successfully:', data.users?.length || 0)
                 setUsers(data.users || [])
             } else {
                 const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
-                console.error('API Error:', response.status, errorData)
                 setError(errorData.message || `Failed to fetch users (${response.status})`)
             }
         } catch (error) {
-            console.error('Network Error fetching users:', error)
             setError(`Network error: ${error.message}`)
         } finally {
             setLoading(false)
@@ -75,11 +69,8 @@ const AdminUsersPage = () => {
             
             if (response.ok) {
                 await fetchUsers()
-            } else {
-                console.error('Failed to update user role')
             }
         } catch (error) {
-            console.error('Error updating user role:', error)
         }
     }
 
@@ -97,11 +88,8 @@ const AdminUsersPage = () => {
             
             if (response.ok) {
                 await fetchUsers()
-            } else {
-                console.error('Failed to delete user')
             }
         } catch (error) {
-            console.error('Error deleting user:', error)
         }
     }
 

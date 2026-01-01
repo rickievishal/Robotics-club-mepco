@@ -35,7 +35,6 @@ const page = () => {
                 setError('Failed to fetch events');
             }
         } catch (err) {
-            console.error('Error fetching events:', err);
             setError('Error loading events. Please try again.');
         } finally {
             setLoading(false);

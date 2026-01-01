@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/app/hooks/useAuth'
 import ShinyText from '@/app/components/Animated-comps/ShinyText'
 import RoleProtectedRoute from '@/app/components/RoleProtectedRoute'
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaCalendarAlt, FaUsers, FaMapMarkerAlt, FaClock, FaUpload } from 'react-icons/fa'
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaCalendarAlt, FaUsers, FaMapMarkerAlt, FaClock, FaImage, FaUpload, FaCheck, FaTimes, FaCompressArrowsAlt } from 'react-icons/fa'
+import { validateImage, compressImage, formatFileSize, MAX_IMAGE_SIZE, getBase64Size } from '@/app/utils/imageUtils'
 
 const OBSEventsPage = () => {
     const { user } = useAuth()
@@ -23,6 +24,10 @@ const OBSEventsPage = () => {
         eventType: 'workshop',
         image: ''
     })
+    const [imageError, setImageError] = useState('')
+    const [imageProcessing, setImageProcessing] = useState(false)
+    const [originalFileSize, setOriginalFileSize] = useState(null)
+    const [compressedFileSize, setCompressedFileSize] = useState(null)
 
     useEffect(() => {
         fetchEvents()
@@ -42,11 +47,9 @@ const OBSEventsPage = () => {
             if (response.ok) {
                 const data = await response.json()
                 setEvents(data.events || [])
-            } else {
-                console.error('Failed to fetch events')
             }
         } catch (error) {
-            console.error('Error fetching events:', error)
+            // Error fetching events
         } finally {
             setLoading(false)
         }
@@ -55,7 +58,6 @@ const OBSEventsPage = () => {
     const createEvent = async (eventData) => {
         try {
             const token = localStorage.getItem('token')
-            console.log('Creating event with data:', eventData)
             
             const response = await fetch('http://localhost:8080/events', {
                 method: 'POST',
@@ -67,8 +69,6 @@ const OBSEventsPage = () => {
             })
             
             const responseData = await response.json()
-            console.log('Response status:', response.status)
-            console.log('Response data:', responseData)
             
             if (response.ok) {
                 await fetchEvents()
@@ -76,11 +76,9 @@ const OBSEventsPage = () => {
                 resetForm()
                 alert('Event created successfully!')
             } else {
-                console.error('Failed to create event:', responseData)
                 alert(`Failed to create event: ${responseData.message || 'Unknown error'}`)
             }
         } catch (error) {
-            console.error('Error creating event:', error)
             alert(`Error creating event: ${error.message}`)
         }
     }
@@ -97,16 +95,18 @@ const OBSEventsPage = () => {
                 body: JSON.stringify(eventData)
             })
             
+            const responseData = await response.json()
+            
             if (response.ok) {
                 await fetchEvents()
                 setShowModal(false)
                 setEditingEvent(null)
                 resetForm()
             } else {
-                console.error('Failed to update event')
+                alert(`Failed to update event: ${responseData.message || 'Unknown error'}`)
             }
         } catch (error) {
-            console.error('Error updating event:', error)
+            alert(`Error updating event: ${error.message}`)
         }
     }
 
@@ -125,10 +125,10 @@ const OBSEventsPage = () => {
             if (response.ok) {
                 await fetchEvents()
             } else {
-                console.error('Failed to delete event')
+                // Failed to delete event
             }
         } catch (error) {
-            console.error('Error deleting event:', error)
+            // Error deleting event
         }
     }
 
@@ -143,6 +143,10 @@ const OBSEventsPage = () => {
             eventType: 'workshop',
             image: ''
         })
+        setImageError('')
+        setImageProcessing(false)
+        setOriginalFileSize(null)
+        setCompressedFileSize(null)
     }
 
     const handleSubmit = (e) => {
@@ -174,6 +178,9 @@ const OBSEventsPage = () => {
             eventType: event.eventType || 'workshop',
             image: event.image || ''
         })
+        setImageError('')
+        setOriginalFileSize(null)
+        setCompressedFileSize(null)
         setShowModal(true)
     }
 
@@ -181,6 +188,48 @@ const OBSEventsPage = () => {
         setEditingEvent(null)
         resetForm()
         setShowModal(true)
+    }
+
+    const handleImageFileChange = async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+
+        setImageError('')
+        setOriginalFileSize(null)
+        setCompressedFileSize(null)
+
+        const validation = validateImage(file)
+        if (!validation.isValid) {
+            setImageError(validation.message)
+            return
+        }
+
+        setOriginalFileSize(file.size)
+        setImageProcessing(true)
+
+        try {
+            const compressedImage = await compressImage(file)
+            setCompressedFileSize(getBase64Size(compressedImage))
+            setFormData({ ...formData, image: compressedImage })
+        } catch (error) {
+            setImageError(error.message)
+        } finally {
+            setImageProcessing(false)
+        }
+    }
+
+    const handleImageUrlChange = (e) => {
+        setFormData({ ...formData, image: e.target.value })
+        setImageError('')
+        setOriginalFileSize(null)
+        setCompressedFileSize(null)
+    }
+
+    const clearImage = () => {
+        setFormData({ ...formData, image: '' })
+        setImageError('')
+        setOriginalFileSize(null)
+        setCompressedFileSize(null)
     }
 
     const filteredEvents = events.filter(event => {
@@ -220,7 +269,6 @@ const OBSEventsPage = () => {
         <RoleProtectedRoute allowedRoles={['admin', 'officebearer']}>
             <div className="w-full pt-[50px] tracking-tighter relative min-h-screen bg-[rgb(10,10,10)]">
                 <div className="max-w-7xl mx-auto px-4 py-8">
-                    {/* Header */}
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                         <div>
                             <ShinyText text="Event Management" />
@@ -237,10 +285,8 @@ const OBSEventsPage = () => {
                         </button>
                     </div>
 
-                    {/* Filters */}
                     <div className="bg-[rgb(13,13,13)] border border-[rgb(29,29,29)] rounded-lg p-4 mb-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Search */}
                             <div className="relative">
                                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[rgb(155,155,155)]" />
                                 <input
@@ -252,7 +298,6 @@ const OBSEventsPage = () => {
                                 />
                             </div>
 
-                            {/* Status Filter */}
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -265,7 +310,6 @@ const OBSEventsPage = () => {
                         </div>
                     </div>
 
-                    {/* Events Table */}
                     <div className="bg-[rgb(13,13,13)] border border-[rgb(29,29,29)] rounded-lg overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
@@ -297,7 +341,6 @@ const OBSEventsPage = () => {
                                 <tbody className="divide-y divide-[rgb(29,29,29)]">
                                     {filteredEvents.map((event) => (
                                         <tr key={event._id} className="hover:bg-[rgb(19,19,19)] transition-colors">
-                                            {/* Image Column */}
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex-shrink-0">
                                                     <img 
@@ -311,7 +354,6 @@ const OBSEventsPage = () => {
                                                 </div>
                                             </td>
                                             
-                                            {/* Event Column */}
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div className="flex-shrink-0 h-10 w-10">
@@ -388,10 +430,9 @@ const OBSEventsPage = () => {
                     </div>
                 </div>
 
-                {/* Modal */}
                 {showModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                        <div className="bg-[rgb(13,13,13)] border border-[rgb(29,29,29)] rounded-lg p-6 w-full max-w-md">
+                        <div className="bg-[rgb(13,13,13)] border border-[rgb(29,29,29)] rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                             <h3 className="text-lg font-bold text-white mb-4">
                                 {editingEvent ? 'Edit Event' : 'Create New Event'}
                             </h3>
@@ -495,15 +536,16 @@ const OBSEventsPage = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Image Upload Section */}
                                 <div>
                                     <label className="block text-sm font-medium text-[rgb(155,155,155)] mb-2">
                                         Event Cover Image
+                                        <span className="text-xs ml-2 text-[rgb(100,100,100)]">
+                                            (Max: {formatFileSize(MAX_IMAGE_SIZE)})
+                                        </span>
                                     </label>
                                     
-                                    {/* Image Preview */}
                                     {formData.image && (
-                                        <div className="mb-4">
+                                        <div className="mb-4 relative">
                                             <img 
                                                 src={formData.image} 
                                                 alt="Event cover preview" 
@@ -512,46 +554,79 @@ const OBSEventsPage = () => {
                                                     e.target.src = 'https://i.pinimg.com/736x/c3/a9/27/c3a927ca97d4f83d7918e4a4cd2deb0d.jpg'
                                                 }}
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={clearImage}
+                                                className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+                                                title="Remove image"
+                                            >
+                                                <FaTimes className="h-3 w-3" />
+                                            </button>
+                                            
+                                            {compressedFileSize && (
+                                                <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 px-2 py-1 rounded text-xs text-white flex items-center">
+                                                    <FaCompressArrowsAlt className="h-3 w-3 mr-1 text-green-400" />
+                                                    {formatFileSize(compressedFileSize)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    
+                                    {imageError && (
+                                        <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg flex items-center text-red-400 text-sm">
+                                            <FaTimes className="h-4 w-4 mr-2 flex-shrink-0" />
+                                            {imageError}
                                         </div>
                                     )}
                                     
                                     <div className="flex space-x-4">
-                                        {/* Image URL Input */}
                                         <div className="flex-1">
                                             <input
                                                 type="url"
                                                 value={formData.image}
-                                                onChange={(e) => setFormData({...formData, image: e.target.value})}
+                                                onChange={handleImageUrlChange}
                                                 className="w-full px-3 py-2 bg-[rgb(19,19,19)] border border-[rgb(29,29,29)] rounded text-white focus:outline-none focus:border-[var(--primary)]"
-                                                placeholder="Enter image URL or use file upload below"
+                                                placeholder="Or enter image URL"
                                             />
                                         </div>
                                         
-                                        {/* File Upload Button */}
                                         <label className="bg-[rgb(19,19,19)] border border-[rgb(29,29,29)] rounded px-4 py-2 cursor-pointer hover:border-[var(--primary)] transition-colors flex items-center space-x-2">
-                                            <FaUpload className="h-4 w-4 text-[rgb(155,155,155)]" />
-                                            <span className="text-[rgb(155,155,155)] text-sm">Upload</span>
+                                            {imageProcessing ? (
+                                                <FaCompressArrowsAlt className="h-4 w-4 text-[var(--primary)] animate-spin" />
+                                            ) : (
+                                                <FaUpload className="h-4 w-4 text-[rgb(155,155,155)]" />
+                                            )}
+                                            <span className="text-[rgb(155,155,155)] text-sm">
+                                                {imageProcessing ? 'Compressing...' : 'Upload'}
+                                            </span>
                                             <input
                                                 type="file"
-                                                accept="image/*"
+                                                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                                                 className="hidden"
-                                                onChange={(e) => {
-                                                    const file = e.target.files[0]
-                                                    if (file) {
-                                                        const reader = new FileReader()
-                                                        reader.onload = (event) => {
-                                                            setFormData({...formData, image: event.target.result})
-                                                        }
-                                                        reader.readAsDataURL(file)
-                                                    }
-                                                }}
+                                                onChange={handleImageFileChange}
                                             />
                                         </label>
                                     </div>
                                     
-                                    <p className="text-xs text-[rgb(155,155,155)] mt-1">
-                                        You can either enter an image URL or upload a file from your device
-                                    </p>
+                                    <div className="mt-2 text-xs text-[rgb(100,100,100)]">
+                                        {originalFileSize && (
+                                            <span className="flex items-center">
+                                                Original: {formatFileSize(originalFileSize)}
+                                                {compressedFileSize && (
+                                                    <span className="mx-2">→</span>
+                                                )}
+                                                {compressedFileSize && (
+                                                    <span className="text-green-400 flex items-center">
+                                                        <FaCheck className="h-3 w-3 mr-1" />
+                                                        Compressed: {formatFileSize(compressedFileSize)}
+                                                    </span>
+                                                )}
+                                            </span>
+                                        )}
+                                        {!originalFileSize && (
+                                            <span>Supported formats: JPG, PNG, GIF, WEBP. Images will be automatically compressed.</span>
+                                        )}
+                                    </div>
                                 </div>
                                 
                                 <div className="flex justify-end space-x-4 pt-4">

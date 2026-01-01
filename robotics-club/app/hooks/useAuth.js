@@ -29,12 +29,10 @@ export const AuthProvider = ({ children }) => {
                 if (userInfo && authToken) {
                     setUser(JSON.parse(userInfo));
                     setToken(authToken);
-                    console.log('Auth: User loaded from localStorage:', userInfo);
                 } else {
-                    console.log('Auth: No userData or token found');
+                    // No existing session
                 }
             } catch (error) {
-                console.error('Error checking auth:', error);
                 localStorage.removeItem('userData');
                 localStorage.removeItem('token');
             } finally {
@@ -51,7 +49,6 @@ export const AuthProvider = ({ children }) => {
         setToken(authToken);
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('token', authToken);
-        console.log('Auth: User logged in:', userData);
     };
 
     // Logout function
@@ -60,7 +57,6 @@ export const AuthProvider = ({ children }) => {
         setToken(null);
         localStorage.removeItem('userData');
         localStorage.removeItem('token');
-        console.log('Auth: User logged out');
     };
 
     // Check if user is authenticated

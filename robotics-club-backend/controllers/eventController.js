@@ -1,3 +1,11 @@
+// Production logging utility
+const log = {
+    info: (component, message) => console.log(`[INFO] [${component}] ${message}`),
+    warn: (component, message) => console.warn(`[WARN] [${component}] ${message}`),
+    error: (component, message) => console.error(`[ERROR] [${component}] ${message}`),
+    request: (method, path, userId) => console.log(`[REQUEST] [${method}] ${path} - User: ${userId || 'anonymous'}`)
+};
+
 const EventModel = require("../models/eventModel")
 
 // Get all events
@@ -5,15 +13,16 @@ const getAllEvents = async (req, res) => {
     try {
         const events = await EventModel.find({})
             .populate('createdBy', 'name email role')
-            .sort({ date: 1 }) // Sort by date ascending
+            .sort({ date: 1 })
         
+        log.info('EVENTS', `Fetched ${events.length} events`);
         res.status(200).json({
             success: true,
             count: events.length,
             events
         })
     } catch (error) {
-        console.error('Error fetching events:', error)
+        log.error('EVENTS', 'Failed to fetch events');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -28,18 +37,20 @@ const getEventById = async (req, res) => {
             .populate('createdBy', 'name email role')
         
         if (!event) {
+            log.warn('EVENTS', `Event not found: ${req.params.id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             })
         }
         
+        log.info('EVENTS', `Fetched event: ${event.title}`);
         res.status(200).json({
             success: true,
             event
         })
     } catch (error) {
-        console.error('Error fetching event:', error)
+        log.error('EVENTS', 'Failed to fetch event');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -47,7 +58,7 @@ const getEventById = async (req, res) => {
     }
 }
 
-// Create new event (Admin only)
+// Create new event (Admin/OB only)
 const createEvent = async (req, res) => {
     try {
         const { title, description, date, venue, host, image, status, maxParticipants, registrationRequired, eventType } = req.body
@@ -78,13 +89,14 @@ const createEvent = async (req, res) => {
         // Populate createdBy info
         await event.populate('createdBy', 'name email role')
         
+        log.info('EVENTS', `Event created: ${title} by ${req.user.email}`);
         res.status(201).json({
             success: true,
             message: 'Event created successfully',
             event
         })
     } catch (error) {
-        console.error('Error creating event:', error)
+        log.error('EVENTS', 'Failed to create event');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -92,7 +104,7 @@ const createEvent = async (req, res) => {
     }
 }
 
-// Update event (Admin only)
+// Update event (Admin/OB only)
 const updateEvent = async (req, res) => {
     try {
         const { title, description, date, venue, host, image, status, maxParticipants, registrationRequired, eventType } = req.body
@@ -116,19 +128,21 @@ const updateEvent = async (req, res) => {
         ).populate('createdBy', 'name email role')
         
         if (!event) {
+            log.warn('EVENTS', `Event not found for update: ${req.params.id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             })
         }
         
+        log.info('EVENTS', `Event updated: ${title} by ${req.user.email}`);
         res.status(200).json({
             success: true,
             message: 'Event updated successfully',
             event
         })
     } catch (error) {
-        console.error('Error updating event:', error)
+        log.error('EVENTS', 'Failed to update event');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -142,18 +156,20 @@ const deleteEvent = async (req, res) => {
         const event = await EventModel.findByIdAndDelete(req.params.id)
         
         if (!event) {
+            log.warn('EVENTS', `Event not found for delete: ${req.params.id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             })
         }
         
+        log.info('EVENTS', `Event deleted: ${event.title} by ${req.user.email}`);
         res.status(200).json({
             success: true,
             message: 'Event deleted successfully'
         })
     } catch (error) {
-        console.error('Error deleting event:', error)
+        log.error('EVENTS', 'Failed to delete event');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -178,13 +194,14 @@ const getEventsByStatus = async (req, res) => {
             .populate('createdBy', 'name email role')
             .sort({ date: 1 })
         
+        log.info('EVENTS', `Fetched ${events.length} events with status: ${status}`);
         res.status(200).json({
             success: true,
             count: events.length,
             events
         })
     } catch (error) {
-        console.error('Error fetching events by status:', error)
+        log.error('EVENTS', 'Failed to fetch events by status');
         res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -192,7 +209,7 @@ const getEventsByStatus = async (req, res) => {
     }
 }
 
-// Update event status (Admin only)
+// Update event status (Admin/OB only)
 const updateEventStatus = async (req, res) => {
     try {
         const { status } = req.body
@@ -212,19 +229,21 @@ const updateEventStatus = async (req, res) => {
         ).populate('createdBy', 'name email role')
         
         if (!event) {
+            log.warn('EVENTS', `Event not found for status update: ${req.params.id}`);
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             })
         }
         
+        log.info('EVENTS', `Event status updated: ${event.title} to ${status}`);
         res.status(200).json({
             success: true,
             message: 'Event status updated successfully',
             event
         })
     } catch (error) {
-        console.error('Error updating event status:', error)
+        log.error('EVENTS', 'Failed to update event status');
         res.status(500).json({
             success: false,
             message: 'Internal server error'

@@ -67,7 +67,6 @@ const AdminDashboard = () => {
                 setRecentEvents(events.slice(-3).reverse())
             }
         } catch (error) {
-            console.error('Error fetching dashboard data:', error)
         }
     }
 

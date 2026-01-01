@@ -28,17 +28,14 @@ const LoginStatus = () => {
     const handleLogin = () => {
         localStorage.removeItem("userData")
         localStorage.removeItem("token")
-        console.log(cookie)
         router.push('/register')
     }
     const handleLogout = () =>{
         localStorage.removeItem("userData")
         localStorage.removeItem("token")
         setCookie(null);
-        console.log(cookie)
         window.location.reload()
     }
-    console.log(cookie)
   return (
     <>
     {cookie ? (

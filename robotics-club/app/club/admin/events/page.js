@@ -47,11 +47,9 @@ const AdminEventsPage = () => {
             if (response.ok) {
                 const data = await response.json()
                 setEvents(data.events || [])
-            } else {
-                console.error('Failed to fetch events')
             }
         } catch (error) {
-            console.error('Error fetching events:', error)
+            // Error fetching events
         } finally {
             setLoading(false)
         }
@@ -60,7 +58,6 @@ const AdminEventsPage = () => {
     const createEvent = async (eventData) => {
         try {
             const token = localStorage.getItem('token')
-            console.log('Creating event with data:', eventData)
             
             const response = await fetch('http://localhost:8080/events', {
                 method: 'POST',
@@ -72,8 +69,6 @@ const AdminEventsPage = () => {
             })
             
             const responseData = await response.json()
-            console.log('Response status:', response.status)
-            console.log('Response data:', responseData)
             
             if (response.ok) {
                 await fetchEvents()
@@ -81,11 +76,9 @@ const AdminEventsPage = () => {
                 resetForm()
                 alert('Event created successfully!')
             } else {
-                console.error('Failed to create event:', responseData)
                 alert(`Failed to create event: ${responseData.message || 'Unknown error'}`)
             }
         } catch (error) {
-            console.error('Error creating event:', error)
             alert(`Error creating event: ${error.message}`)
         }
     }
@@ -108,10 +101,10 @@ const AdminEventsPage = () => {
                 setEditingEvent(null)
                 resetForm()
             } else {
-                console.error('Failed to update event')
+                // Failed to update event
             }
         } catch (error) {
-            console.error('Error updating event:', error)
+            // Error updating event
         }
     }
 
@@ -130,10 +123,10 @@ const AdminEventsPage = () => {
             if (response.ok) {
                 await fetchEvents()
             } else {
-                console.error('Failed to delete event')
+                // Failed to delete event
             }
         } catch (error) {
-            console.error('Error deleting event:', error)
+            // Error deleting event
         }
     }
 

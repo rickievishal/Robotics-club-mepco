@@ -96,7 +96,6 @@ const EmailAuth = () => {
             }
             
         } catch (err) {
-            console.error('Authentication error:', err);
             setError(err.response?.data?.message || 'Authentication failed');
         } finally {
             setLoading(false);

@@ -74,7 +74,6 @@ export const compressImage = (file, options = {}) => {
                 const base64Length = compressedDataUrl.split(',')[1].length;
                 const compressedSize = Math.round((base64Length * 3) / 4);
 
-                console.log(`Original: ${formatFileSize(file.size)} → Compressed: ${formatFileSize(compressedSize)}`);
                 resolve(compressedDataUrl);
             };
 

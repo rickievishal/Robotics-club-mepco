@@ -1,3 +1,11 @@
+// Production logging utility
+const log = {
+    info: (component, message) => console.log(`[INFO] [${component}] ${message}`),
+    warn: (component, message) => console.warn(`[WARN] [${component}] ${message}`),
+    error: (component, message) => console.error(`[ERROR] [${component}] ${message}`),
+    request: (method, path, userId) => console.log(`[REQUEST] [${method}] ${path} - User: ${userId || 'anonymous'}`)
+};
+
 const express = require("express")
 const http = require('http');
 const socketIo = require('socket.io');
@@ -23,7 +31,7 @@ const io = socketIo(server, {
     transports: ['websocket', 'polling'],
     allowEIO3: true,
     allowEIO4: true,
-    serveClient: false,  // We'll serve client files manually
+    serveClient: false,
     pingTimeout: 60000,
     pingInterval: 25000
 });
@@ -33,7 +41,7 @@ app.use('/socket.io', (req, res) => {
     const filePath = path.join(__dirname, 'node_modules/socket.io/client-dist', req.url);
     res.sendFile(filePath, (err) => {
         if (err) {
-            console.error('Error serving Socket.IO client:', err);
+            log.error('SOCKET', 'Failed to serve Socket.IO client');
             res.status(404).send('Socket.IO client not found');
         }
     });
@@ -48,8 +56,15 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+    log.request(req.method, req.path, req.user?._id);
+    next();
+});
+
 app.get('/', (req,res)=> {
-    res.send("hello");
+    res.send("Robotics Club API is running");
 });
 
 // API routes
@@ -59,7 +74,7 @@ app.use("/events",eventsRouter)
 
 // Chat room data storage
 let messages = [];
-let activeUsers = new Map(); // Store active users with their socket IDs
+let activeUsers = new Map();
 
 app.set('io', io);
 
@@ -72,7 +87,7 @@ async function updateUserOnlineStatus(userId, isOnline, inChatroom = false) {
       chatroomJoined: inChatroom
     });
   } catch (error) {
-    console.error('Error updating user online status:', error);
+    log.error('DB', 'Failed to update user online status');
   }
 }
 
@@ -82,28 +97,26 @@ async function getOnlineUsers() {
     const onlineUsers = await UserModel.find({ isOnline: true }).select('name email role isOnline lastSeen chatroomJoined');
     return onlineUsers;
   } catch (error) {
-    console.error('Error fetching online users:', error);
+    log.error('DB', 'Failed to fetch online users');
     return [];
   }
 }
 
 // Enhanced socket connection handling
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  log.info('SOCKET', `New connection: ${socket.id}`);
   
   // Connection error handling
   socket.on('error', (error) => {
-    console.error('Socket error:', error);
+    log.error('SOCKET', `Socket error for ${socket.id}`);
     socket.emit('error-message', { message: 'Connection error occurred' });
   });
   
 // Handle user joining chatroom
   socket.on('join-chat', async (userData) => {
     try {
-      // Update user online status in database
       await updateUserOnlineStatus(userData._id, true, true);
       
-      // Store user data with socket ID
       activeUsers.set(socket.id, {
         ...userData,
         socketId: socket.id,
@@ -112,28 +125,23 @@ io.on('connection', (socket) => {
         inChatroom: true
       });
       
-      // Add user to a specific chatroom
       socket.join('chatroom');
       
-      // Send current active users to the joining user
       socket.emit('active-users', Array.from(activeUsers.values()));
       
-      // Get and send updated online users list
       const onlineUsers = await getOnlineUsers();
       io.emit('online-users-update', onlineUsers);
       
-      // Broadcast to all users that someone joined
       socket.to('chatroom').emit('user-joined', {
-        user: userData,
+        user: { name: userData.name, role: userData.role },
         timestamp: new Date()
       });
       
-      // Send existing messages to new user
       socket.emit('init', messages);
       
-      console.log(`${userData.name} joined the chat`);
+      log.info('CHAT', `User joined: ${userData.name} (${userData.role})`);
     } catch (error) {
-      console.error('Error in join-chat handler:', error);
+      log.error('CHAT', 'Failed to process user join');
     }
   });
   
@@ -151,18 +159,15 @@ io.on('connection', (socket) => {
       socketId: socket.id
     };
     
-    // Store message
     messages.push(message);
     
-    // Keep only last 100 messages
     if (messages.length > 100) {
       messages = messages.slice(-100);
     }
     
-    // Broadcast message to all users in chatroom
     io.to('chatroom').emit('new-message', message);
     
-    console.log(`${userData.name}: ${messageData.text}`);
+    log.info('CHAT', `Message from ${userData.name}`);
   });
   
   // Handle user typing
@@ -192,69 +197,60 @@ io.on('connection', (socket) => {
     try {
       const userData = activeUsers.get(socket.id);
       if (userData) {
-        console.log(`${userData.name} disconnected`);
+        log.info('SOCKET', `User disconnected: ${userData.name}`);
         
-        // Update user offline status in database
         await updateUserOnlineStatus(userData._id, false, false);
         
-        // Remove from active users
         activeUsers.delete(socket.id);
         
-        // Broadcast to all users that someone left
         socket.to('chatroom').emit('user-left', {
-          user: userData,
+          user: { name: userData.name, role: userData.role },
           timestamp: new Date()
         });
         
-        // Update active users list for remaining users
         socket.to('chatroom').emit('active-users', Array.from(activeUsers.values()));
         
-        // Get and send updated online users list
         const onlineUsers = await getOnlineUsers();
         io.emit('online-users-update', onlineUsers);
       } else {
-        console.log('User disconnected:', socket.id);
+        log.info('SOCKET', `Socket disconnected: ${socket.id}`);
       }
     } catch (error) {
-      console.error('Error in disconnect handler:', error);
+      log.error('SOCKET', 'Error in disconnect handler');
     }
   });
   
-// Handle user explicitly leaving chatroom (optional event)
+// Handle user explicitly leaving chatroom
   socket.on('leave-chat', async () => {
     try {
       const userData = activeUsers.get(socket.id);
       if (userData) {
-        // Update user status to offline but not necessarily in chatroom
         await updateUserOnlineStatus(userData._id, false, false);
         
-        // Remove from active users
         activeUsers.delete(socket.id);
         
-        // Broadcast to all users that someone left
         socket.to('chatroom').emit('user-left', {
-          user: userData,
+          user: { name: userData.name, role: userData.role },
           timestamp: new Date()
         });
         
-        // Update active users list for remaining users
         socket.to('chatroom').emit('active-users', Array.from(activeUsers.values()));
         
-        // Get and send updated online users list
         const onlineUsers = await getOnlineUsers();
         io.emit('online-users-update', onlineUsers);
         
-        // Leave the chatroom
         socket.leave('chatroom');
+        
+        log.info('CHAT', `User left: ${userData.name}`);
       }
     } catch (error) {
-      console.error('Error in leave-chat handler:', error);
+      log.error('CHAT', 'Error in leave-chat handler');
     }
   });
 });
 
 // Start the HTTP server properly with Socket.IO integration
 server.listen(PORT, () => {
-    console.log(`the server is running in the port ${PORT}`);
-    console.log(`Socket.IO server is ready at http://localhost:${PORT}`);
+    log.info('SERVER', `Server started on port ${PORT}`);
+    log.info('SERVER', `Socket.IO ready at http://localhost:${PORT}`);
 });

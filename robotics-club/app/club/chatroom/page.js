@@ -31,27 +31,22 @@ const page = () => {
 
     // Connection status monitoring
     socket.on('connect', () => {
-      console.log('Socket connected');
       setConnectionStatus('connected');
     });
 
     socket.on('disconnect', () => {
-      console.log('Socket disconnected');
       setConnectionStatus('disconnected');
     });
 
     socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
       setConnectionStatus('error');
     });
 
     socket.on('reconnect', () => {
-      console.log('Socket reconnected');
       setConnectionStatus('connected');
     });
 
     socket.on('error-message', (error) => {
-      console.error('Socket error message:', error);
       setConnectionStatus('error');
     });
 
@@ -84,7 +79,6 @@ const page = () => {
     // Listen for online users updates (real-time online status)
     socket.on('online-users-update', (users) => {
       setOnlineUsers(users);
-      console.log('Online users updated:', users);
     });
 
     // Listen for user join notifications

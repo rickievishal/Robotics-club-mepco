@@ -8,7 +8,6 @@ const AdminAuth = ({children}) => {
     useEffect(()=>{
         const cookie = JSON.parse(localStorage.getItem("user-info"))
         setIsAdmin()
-        console.log(cookie?.role)
         if (!(cookie?.role === "admin")){
             setIsAdmin(false)
             // router.push("/")
