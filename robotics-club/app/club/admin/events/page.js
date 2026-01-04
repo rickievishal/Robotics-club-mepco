@@ -5,6 +5,7 @@ import ShinyText from '@/app/components/Animated-comps/ShinyText'
 import RoleProtectedRoute from '@/app/components/RoleProtectedRoute'
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaCalendarAlt, FaUsers, FaMapMarkerAlt, FaClock, FaImage, FaUpload, FaCheck, FaTimes, FaCompressArrowsAlt } from 'react-icons/fa'
 import { validateImage, compressImage, formatFileSize, MAX_IMAGE_SIZE, getBase64Size } from '@/app/utils/imageUtils'
+import LoadingComp from '@/app/components/Animated-comps/LoadingComp'
 
 const AdminEventsPage = () => {
     const { user } = useAuth()
@@ -257,7 +258,8 @@ const AdminEventsPage = () => {
         return (
             <RoleProtectedRoute allowedRoles={['admin', 'officebearer']}>
                 <div className="w-full pt-[50px] flex justify-center items-center min-h-screen">
-                    <div className="text-[var(--primary)] text-xl">Loading events...</div>
+                    <LoadingComp/>
+                    {/* <div className="text-[var(--primary)] text-xl">Loading events...</div> */}
                 </div>
             </RoleProtectedRoute>
         )

@@ -9,7 +9,6 @@ import { validateImage, compressImage, formatFileSize, MAX_IMAGE_SIZE, getBase64
 const OBSEventsPage = () => {
     const { user } = useAuth()
     const [events, setEvents] = useState([])
-    const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [showModal, setShowModal] = useState(false)
@@ -35,7 +34,6 @@ const OBSEventsPage = () => {
 
     const fetchEvents = async () => {
         try {
-            setLoading(true)
             const token = localStorage.getItem('token')
             const response = await fetch('http://localhost:8080/events', {
                 headers: {
@@ -50,8 +48,6 @@ const OBSEventsPage = () => {
             }
         } catch (error) {
             // Error fetching events
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -253,16 +249,6 @@ const OBSEventsPage = () => {
             hour: '2-digit',
             minute: '2-digit'
         })
-    }
-
-    if (loading) {
-        return (
-            <RoleProtectedRoute allowedRoles={['admin', 'officebearer']}>
-                <div className="w-full pt-[50px] flex justify-center items-center min-h-screen">
-                    <div className="text-[var(--primary)] text-xl">Loading events...</div>
-                </div>
-            </RoleProtectedRoute>
-        )
     }
 
     return (
