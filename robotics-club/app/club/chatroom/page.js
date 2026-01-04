@@ -5,7 +5,9 @@ import RoleProtectedRoute from '@/app/components/RoleProtectedRoute';
 import { useAuth } from '@/app/hooks/useAuth';
 import { FaUser, FaUsers, FaPaperPlane } from 'react-icons/fa';
 
-const socket = io('http://localhost:8080', {
+import { SOCKET_URL } from '@/app/utils/apiConfig';
+
+const socket = io(SOCKET_URL, {
   transports: ['websocket', 'polling'],
   autoConnect: true,
   reconnection: true,
@@ -297,3 +299,4 @@ const page = () => {
 }
 
 export default page;
+

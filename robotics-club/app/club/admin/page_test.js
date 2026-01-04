@@ -5,6 +5,7 @@ import ShinyText from '@/app/components/Animated-comps/ShinyText'
 import RoleProtectedRoute from '@/app/components/RoleProtectedRoute'
 import { Link } from 'next/link'
 import { FaUsers, FaCalendarAlt, FaChartBar, FaCog, FaUserShield, FaBell, FaDatabase, FaNetworkWired, FaUser } from 'react-icons/fa'
+import { API_BASE_URL } from '@/app/utils/apiConfig'
 
 const AdminDashboard = () => {
     const { user } = useAuth()
@@ -26,7 +27,7 @@ const AdminDashboard = () => {
             const token = localStorage.getItem('token')
             
             // Fetch users data
-            const usersResponse = await fetch('http://localhost:8080/auth/users', {
+            const usersResponse = await fetch(`${API_BASE_URL}/auth/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -47,7 +48,7 @@ const AdminDashboard = () => {
             }
 
             // Fetch events data
-            const eventsResponse = await fetch('http://localhost:8080/events', {
+            const eventsResponse = await fetch(`${API_BASE_URL}/events`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

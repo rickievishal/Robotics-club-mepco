@@ -5,6 +5,7 @@ import ShinyText from '@/app/components/Animated-comps/ShinyText'
 import RoleProtectedRoute from '@/app/components/RoleProtectedRoute'
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaCalendarAlt, FaUsers, FaMapMarkerAlt, FaClock, FaImage, FaUpload, FaCheck, FaTimes, FaCompressArrowsAlt } from 'react-icons/fa'
 import { validateImage, compressImage, formatFileSize, MAX_IMAGE_SIZE, getBase64Size } from '@/app/utils/imageUtils'
+import { API_BASE_URL } from '@/app/utils/apiConfig'
 
 const OBSEventsPage = () => {
     const { user } = useAuth()
@@ -35,7 +36,7 @@ const OBSEventsPage = () => {
     const fetchEvents = async () => {
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch('http://localhost:8080/events', {
+            const response = await fetch(`${API_BASE_URL}/events`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -55,7 +56,7 @@ const OBSEventsPage = () => {
         try {
             const token = localStorage.getItem('token')
             
-            const response = await fetch('http://localhost:8080/events', {
+            const response = await fetch(`${API_BASE_URL}/events`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -82,7 +83,7 @@ const OBSEventsPage = () => {
     const updateEvent = async (eventId, eventData) => {
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`http://localhost:8080/events/${eventId}`, {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -111,7 +112,7 @@ const OBSEventsPage = () => {
         
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`http://localhost:8080/events/${eventId}`, {
+            const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

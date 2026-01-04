@@ -5,6 +5,7 @@ import ShinyText from '@/app/components/Animated-comps/ShinyText'
 import RoleProtectedRoute from '@/app/components/RoleProtectedRoute'
 import { FaEdit, FaTrash, FaSearch, FaUserShield, FaUser, FaUsers } from 'react-icons/fa'
 import { IoIosMore } from 'react-icons/io'
+import { API_BASE_URL } from '@/app/utils/apiConfig'
 
 const AdminUsersPage = () => {
     const { user } = useAuth()
@@ -33,7 +34,7 @@ const AdminUsersPage = () => {
                 return
             }
             
-            const response = await fetch('http://localhost:8080/auth/users', {
+            const response = await fetch(`${API_BASE_URL}/auth/users`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -58,7 +59,7 @@ const AdminUsersPage = () => {
     const updateUserRole = async (userId, newRole) => {
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`http://localhost:8080/auth/users/${userId}/role`, {
+            const response = await fetch(`${API_BASE_URL}/auth/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -79,7 +80,7 @@ const AdminUsersPage = () => {
         
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`http://localhost:8080/auth/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/auth/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
