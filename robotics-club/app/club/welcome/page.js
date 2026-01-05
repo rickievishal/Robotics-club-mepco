@@ -73,7 +73,7 @@ const Page = () => {
     }
   }
 
-  if (!user || !userCookie) return <div className='w-full h-full flex justify-center items-center'><LoadingComp/></div>
+  if (!user || !userCookie) return <div className='w-full h-screen flex justify-center items-center'><LoadingComp/></div>
 
   return (
     <RoleProtectedRoute allowedRoles={['member', 'officebearer', 'admin']}>
