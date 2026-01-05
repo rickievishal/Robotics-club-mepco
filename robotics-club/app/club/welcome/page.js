@@ -8,6 +8,7 @@ import ConfettiExplosion from 'react-confetti-explosion'
 import { BsArrowUpRight } from "react-icons/bs";
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import LoadingComp from '@/app/components/Animated-comps/LoadingComp'
 
 const Page = () => {
   const { user } = useAuth()
@@ -72,7 +73,7 @@ const Page = () => {
     }
   }
 
-  if (!user || !userCookie) return <div>Loading...</div>
+  if (!user || !userCookie) return <div className='w-full h-full flex justify-center items-center'><LoadingComp/></div>
 
   return (
     <RoleProtectedRoute allowedRoles={['member', 'officebearer', 'admin']}>

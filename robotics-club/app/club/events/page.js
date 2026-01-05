@@ -5,6 +5,7 @@ import { getAllEvents } from '@/app/components/api'
 import React, { useState, useEffect } from 'react'
 import { IoMdClose } from "react-icons/io";
 import { FaSearch, FaFilter, FaCalendarAlt, FaClock, FaChevronDown, FaChevronUp } from 'react-icons/fa'
+import LoadingComp from '@/app/components/Animated-comps/LoadingComp'
 
 const page = () => {
     const { user, token } = useAuth();
@@ -152,7 +153,7 @@ const page = () => {
     if (loading) {
         return (
             <div className='w-full pt-[50px] tracking-tighter relative flex justify-center items-center min-h-screen'>
-                <div className='text-2xl text-[var(--primary)]'>Loading events...</div>
+                <LoadingComp/>
             </div>
         );
     }
