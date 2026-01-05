@@ -35,13 +35,6 @@ const Header = () => {
         return (
           <>
             <li>
-              <Link href={"/club/feed"}>
-                <button className="text-[var(--primary)] px-4 py-1 rounded-lg hover:cursor-pointer hover:underline mr-2">
-                  Feeds
-                </button>
-              </Link>
-            </li>
-            <li>
               <Link href={"/club/events"}>
                 <button className="text-[var(--primary)] px-4 py-1 rounded-lg hover:cursor-pointer hover:underline mr-2">
                   Events
@@ -61,13 +54,6 @@ const Header = () => {
       case 'officebearer':
         return (
           <>
-            <li>
-              <Link href={"/club/feed"}>
-                <button className="text-[var(--primary)] px-4 py-1 rounded-lg hover:cursor-pointer hover:underline mr-2">
-                  Feeds
-                </button>
-              </Link>
-            </li>
             <li>
               <Link href={"/club/events"}>
                 <button className="text-[var(--primary)] px-4 py-1 rounded-lg hover:cursor-pointer hover:underline mr-2">
@@ -95,6 +81,7 @@ const Header = () => {
       case 'admin':
         return (
           <>
+            
             <li>
               <Link href={"/club/events"}>
                 <button className="text-[var(--primary)] px-4 py-1 rounded-lg hover:cursor-pointer hover:underline mr-2">
