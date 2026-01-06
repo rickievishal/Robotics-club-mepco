@@ -266,9 +266,9 @@ export default function Home() {
       </Marquee>
     </div>
     <div className="w-full">
-        <div className="max-w-7xl mx-auto px-4 lg:py-32 flex flex-col items-center justify-center py-32">
+        <div className="max-w-7xl h-[300px] mx-auto px-4 lg:py-32 flex flex-col items-center justify-center py-32">
                   <AnimatePresence>
-                  <motion.div layout={"size"} transition={{type:"spring",stiffness:300,damping:20 }} className="w-full text-4xl text-[var(--primary)] text-center flex items-center justify-center">
+                  <motion.div layout={"size"} transition={{type:"spring",stiffness:300,damping:20 }} className=" text-4xl text-[var(--primary)] text-center flex items-center justify-center">
                    <motion.p layout className="mr-4" transition={{type:"spring",stiffness:300,damping:20,duration:0.5}} >
                      Join the cult. Be The cult. 
                    </motion.p>

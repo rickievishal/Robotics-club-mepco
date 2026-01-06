@@ -6,8 +6,8 @@ import EmailAuth from '../components/EmailAuth';
 
 const page = () => {
   return (
-    <div className='w-screen h-screen flex justify-center items-center px-4 bg-[var(--baclground)] tracking-[-1px] '>
-          <div className='max-w-4xl w-full h-[85%] rounded-lg relative overflow-hidden grid grid-cols-2 justify-center shadow-lg border-[1px] border-[rgba(255,255,255,0.13)] bg-[var(--background)]'>
+    <div className='w-screen py-[100px] flex justify-center items-center px-4 bg-[var(--baclground)] tracking-[-1px] overflow-x-hidden'>
+          <div className='max-w-4xl w-full rounded-lg relative overflow-hidden grid grid-cols-2 justify-center shadow-lg border-[1px] border-[rgba(255,255,255,0.13)] bg-[var(--background)]'>
             <div className='hidden sm:block col-span-1 bg-[var(--background)]'>
                 <img className='w-full h-full object-cover' src='https://hips.hearstapps.com/altaonline/wp-content/uploads/2018/11/ATA010819jobs_img01.jpg?resize=980:*'/>
             </div>
