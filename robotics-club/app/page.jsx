@@ -102,30 +102,7 @@ export default function Home() {
         <p className="text-lg text-gray-100 text-center max-w-2xl leading-tight">
           Join us every Saturday for hands-on events, coding challenges, and robot battles. Whether you're a beginner or a pro, there's always something to spark your circuits!
         </p>
-        <div className="flex gap-2">
-          <Link href={"/club/feed"}>
-            <button className="px-4 py-2 bg-[var(--primary)] rounded-r-full rounded-l-full">
-              Feeds
-            </button>
-          </Link>
-          <Link href={"/club/events"}>
-            <button className="px-4 py-2 bg-[var(--primary)] rounded-r-full rounded-l-full">
-              events
-            </button>
-          </Link>
-          <Link href={"/club/chatroom"}>
-            <button className="px-4 py-2 bg-[var(--primary)] rounded-r-full rounded-l-full">
-              chatroom
-            </button>
-          </Link>
-          <Link href={"/club/obs/ob-tools/schedule-events"}>
-            <button className="px-4 py-2 bg-[var(--primary)] rounded-r-full rounded-l-full">
-              add events
-            </button>
-          </Link>
-          
-
-        </div>
+        
         <div className="mx-auto max-w-4xl w-full grid grid-cols-2 mt-16 gap-4 ">
           <HomeCard className="col-span-1"/>
           <HomeCard className="col-span-1"/>
