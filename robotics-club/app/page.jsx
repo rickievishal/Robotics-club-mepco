@@ -23,7 +23,7 @@ export default function Home() {
   },{
     name : "Gauresh",
     role : "Membership Coordinator",
-    imgUrl : "https://i.pinimg.com/736x/eb/de/62/ebde6293d007c873ce1cda392b01f847.jpg"
+    imgUrl : "./assets/gauresh.png"
   },{
     name : "Nivetha",
     role : "Membership Coordinator",
